@@ -1,0 +1,75 @@
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
+from contextlib import asynccontextmanager
+
+from app.database.database import engine, Base
+from app.api.v1 import auth, workspaces, tasks, profile, comments, invites, chat
+
+# Создаем таблицы в базе данных
+Base.metadata.create_all(bind=engine)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Запуск приложения
+    print("🚀 NextTask Server is starting...")
+    yield
+    # Остановка приложения
+    print("🛑 NextTask Server is shutting down...")
+
+app = FastAPI(
+    title="NextTask API",
+    description="API для системы управления задачами и рабочими пространствами",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Настройка CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Фронтенд URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Подключаем статические файлы для аватаров
+if os.path.exists("uploads"):
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Подключаем роуты API
+api_prefix = "/api/v1"
+
+app.include_router(auth.router, prefix=f"{api_prefix}/auth", tags=["auth"])
+app.include_router(workspaces.router, prefix=f"{api_prefix}/workspaces", tags=["workspaces"])
+app.include_router(tasks.router, prefix=f"{api_prefix}/tasks", tags=["tasks"])
+app.include_router(profile.router, prefix=f"{api_prefix}/profile", tags=["profile"])
+app.include_router(comments.router, prefix=f"{api_prefix}/comments", tags=["comments"])
+app.include_router(invites.router, prefix=f"{api_prefix}/invites", tags=["invites"])
+app.include_router(chat.router, prefix=f"{api_prefix}/chat", tags=["chat"])
+
+@app.get("/")
+def root():
+    """Корневой эндпоинт"""
+    return {
+        "message": "Welcome to NextTask API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }
+
+@app.get("/health")
+def health_check():
+    """Проверка здоровья сервера"""
+    return {"status": "healthy", "service": "NextTask API"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )
