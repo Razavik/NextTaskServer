@@ -7,6 +7,7 @@ from typing import Optional
 from app.database.database import get_db
 from app.models.user import User
 from app.schemas.user import UserResponse, UserUpdate
+from app.core.security import get_current_active_user
 
 router = APIRouter()
 
