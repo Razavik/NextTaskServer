@@ -74,6 +74,10 @@ app.include_router(chat.router, prefix="/chat", tags=["chat"])
 # Дополнительный путь для задач рабочих пространств
 app.include_router(tasks.router, prefix="/workspaces", tags=["workspace-tasks"])
 
+# Дополнительный путь для me эндпоинтов
+app.include_router(invites.router, prefix="/me", tags=["me-invites"])
+app.include_router(profile.router, prefix="/me", tags=["me-profile"])
+
 @app.get("/")
 def root():
     """Корневой эндпоинт"""
@@ -98,7 +102,13 @@ def root():
             },
             "profile": {
                 "v1": "/api/v1/profile/me",
-                "direct": "/profile/me"
+                "direct": "/profile/me",
+                "me": "/me/me"
+            },
+            "invites": {
+                "v1": "/api/v1/invites/",
+                "direct": "/invites/",
+                "me": "/me/invites"
             }
         }
     }
