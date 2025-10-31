@@ -71,6 +71,9 @@ app.include_router(comments.router, prefix="/comments", tags=["comments"])
 app.include_router(invites.router, prefix="/invites", tags=["invites"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 
+# Дополнительный путь для задач рабочих пространств
+app.include_router(tasks.router, prefix="/workspaces", tags=["workspace-tasks"])
+
 @app.get("/")
 def root():
     """Корневой эндпоинт"""
@@ -90,7 +93,8 @@ def root():
             },
             "tasks": {
                 "v1": "/api/v1/tasks/",
-                "direct": "/tasks/"
+                "direct": "/tasks/",
+                "workspace_tasks": "/workspaces/{workspace_id}/tasks"
             },
             "profile": {
                 "v1": "/api/v1/profile/me",
