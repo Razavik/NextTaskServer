@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Загружаем переменные окружения
+load_dotenv()
 
 from app.database.database import engine, Base
 from app.api.v1 import auth, workspaces, tasks, profile, comments, invites, chat
@@ -26,9 +30,17 @@ app = FastAPI(
 )
 
 # Настройка CORS
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
+if allowed_origins == "*":
+    allow_origins_list = ["*"]
+else:
+    allow_origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+
+print(f"CORS Origins: {allow_origins_list}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Фронтенд URL
+    allow_origins=allow_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
