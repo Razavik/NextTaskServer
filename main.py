@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.database.database import engine, Base
-from app.api.v1 import auth, workspaces, tasks, profile, comments, invites, chat
+from app.api.v1 import auth, workspaces, tasks, profile, comments, invites, chat, me
 
 # Создаем таблицы в базе данных
 Base.metadata.create_all(bind=engine)
@@ -61,6 +61,7 @@ app.include_router(profile.router, prefix=f"{api_prefix}/profile", tags=["profil
 app.include_router(comments.router, prefix=f"{api_prefix}/comments", tags=["comments"])
 app.include_router(invites.router, prefix=f"{api_prefix}/invites", tags=["invites"])
 app.include_router(chat.router, prefix=f"{api_prefix}/chat", tags=["chat"])
+app.include_router(me.router, prefix=f"{api_prefix}/me", tags=["me"])
 
 # Прямые пути без префикса для обратной совместимости
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -70,13 +71,10 @@ app.include_router(profile.router, prefix="/profile", tags=["profile"])
 app.include_router(comments.router, prefix="/comments", tags=["comments"])
 app.include_router(invites.router, prefix="/invites", tags=["invites"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
+app.include_router(me.router, prefix="/me", tags=["me"])
 
 # Дополнительный путь для задач рабочих пространств
 app.include_router(tasks.router, prefix="/workspaces", tags=["workspace-tasks"])
-
-# Дополнительный путь для me эндпоинтов
-app.include_router(invites.router, prefix="/me", tags=["me-invites"])
-app.include_router(profile.router, prefix="/me", tags=["me-profile"])
 
 @app.get("/")
 def root():
@@ -103,7 +101,7 @@ def root():
             "profile": {
                 "v1": "/api/v1/profile/me",
                 "direct": "/profile/me",
-                "me": "/me/me"
+                "me": "/me/profile"
             },
             "invites": {
                 "v1": "/api/v1/invites/",
@@ -117,6 +115,19 @@ def root():
 def health_check():
     """Проверка здоровья сервера"""
     return {"status": "healthy", "service": "NextTask API"}
+
+@app.get("/debug/routes")
+def debug_routes():
+    """Отладка всех доступных маршрутов"""
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods) if route.methods else [],
+                "name": getattr(route, 'name', 'unknown')
+            })
+    return {"routes": routes}
 
 if __name__ == "__main__":
     import uvicorn
