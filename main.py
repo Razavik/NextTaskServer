@@ -75,6 +75,7 @@ app.include_router(me.router, prefix="/me", tags=["me"])
 
 # Дополнительный путь для задач рабочих пространств
 app.include_router(tasks.router, prefix="/workspaces", tags=["workspace-tasks"])
+print("Tasks router included with /workspaces prefix")
 
 @app.get("/")
 def root():
@@ -128,6 +129,11 @@ def debug_routes():
                 "name": getattr(route, 'name', 'unknown')
             })
     return {"routes": routes}
+
+@app.get("/test/workspace-tasks/{workspace_id}")
+def test_workspace_tasks(workspace_id: int):
+    """Тестовый эндпоинт для проверки маршрута"""
+    return {"message": f"Test endpoint for workspace {workspace_id} tasks", "workspace_id": workspace_id}
 
 if __name__ == "__main__":
     import uvicorn
