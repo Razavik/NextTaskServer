@@ -23,6 +23,7 @@ class User(Base):
     created_tasks = relationship("Task", back_populates="creator")
     sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
     received_messages = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
+    workspace_messages = relationship("WorkspaceMessage", back_populates="sender")
     comments = relationship("Comment", back_populates="author")
     sent_invites = relationship("Invite", foreign_keys="Invite.inviter_id", back_populates="inviter")
     received_invites = relationship("Invite", foreign_keys="Invite.invitee_id", back_populates="invitee")
