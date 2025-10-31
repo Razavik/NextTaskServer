@@ -30,7 +30,7 @@ app = FastAPI(
 )
 
 # Настройка CORS
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*")
 if allowed_origins == "*":
     allow_origins_list = ["*"]
 else:
@@ -53,6 +53,7 @@ if os.path.exists("uploads"):
 # Подключаем роуты API
 api_prefix = "/api/v1"
 
+# Основные пути с префиксом
 app.include_router(auth.router, prefix=f"{api_prefix}/auth", tags=["auth"])
 app.include_router(workspaces.router, prefix=f"{api_prefix}/workspaces", tags=["workspaces"])
 app.include_router(tasks.router, prefix=f"{api_prefix}/tasks", tags=["tasks"])
@@ -61,6 +62,15 @@ app.include_router(comments.router, prefix=f"{api_prefix}/comments", tags=["comm
 app.include_router(invites.router, prefix=f"{api_prefix}/invites", tags=["invites"])
 app.include_router(chat.router, prefix=f"{api_prefix}/chat", tags=["chat"])
 
+# Прямые пути без префикса для обратной совместимости
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(workspaces.router, prefix="/workspaces", tags=["workspaces"])
+app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
+app.include_router(profile.router, prefix="/profile", tags=["profile"])
+app.include_router(comments.router, prefix="/comments", tags=["comments"])
+app.include_router(invites.router, prefix="/invites", tags=["invites"])
+app.include_router(chat.router, prefix="/chat", tags=["chat"])
+
 @app.get("/")
 def root():
     """Корневой эндпоинт"""
@@ -68,7 +78,25 @@ def root():
         "message": "Welcome to NextTask API",
         "version": "1.0.0",
         "docs": "/docs",
-        "redoc": "/redoc"
+        "redoc": "/redoc",
+        "endpoints": {
+            "auth": {
+                "v1": "/api/v1/auth/register",
+                "direct": "/auth/register"
+            },
+            "workspaces": {
+                "v1": "/api/v1/workspaces/",
+                "direct": "/workspaces/"
+            },
+            "tasks": {
+                "v1": "/api/v1/tasks/",
+                "direct": "/tasks/"
+            },
+            "profile": {
+                "v1": "/api/v1/profile/me",
+                "direct": "/profile/me"
+            }
+        }
     }
 
 @app.get("/health")
